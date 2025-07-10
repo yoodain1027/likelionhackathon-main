@@ -1,4 +1,5 @@
-require('dotenv').config()
+require('dotenv').config({ path: __dirname + '/.env' })
+console.log('SESSION_SECRET:', process.env.SESSION_SECRET)
 const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcrypt') // 비밀번호 해싱
