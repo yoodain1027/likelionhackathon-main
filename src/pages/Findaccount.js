@@ -28,12 +28,15 @@ const FindPassword = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch('https://joongbu.store/send-reset-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ iduser: form.userId, email: form.email }),
-      })
+      const response = await fetch(
+        'https://joongbu.store/api/send-reset-code',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ iduser: form.userId, email: form.email }),
+        }
+      )
       const data = await response.json()
       if (response.ok) {
         alert('인증코드가 발송되었습니다!')
@@ -67,16 +70,19 @@ const FindPassword = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch('https://joongbu.store/verify-reset-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          iduser: form.userId,
-          email: form.email,
-          code: form.code,
-        }),
-      })
+      const response = await fetch(
+        'https://joongbu.store/api/verify-reset-code',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            iduser: form.userId,
+            email: form.email,
+            code: form.code,
+          }),
+        }
+      )
       const data = await response.json()
       if (response.ok) {
         alert('인증이 확인되었습니다!')
@@ -100,7 +106,7 @@ const FindPassword = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch('https://joongbu.store/reset-password', {
+      const response = await fetch('https://joongbu.store/api/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

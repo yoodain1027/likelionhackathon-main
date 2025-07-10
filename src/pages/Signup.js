@@ -33,12 +33,15 @@ const Signup = () => {
       return
     }
     try {
-      const response = await fetch('https://joongbu.store/send-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: formData.이메일 }),
-      })
+      const response = await fetch(
+        'https://joongbu.store/api/send-verification',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: formData.이메일 }),
+        }
+      )
       const data = await response.json()
       if (response.ok) {
         alert('인증코드가 발송되었습니다.')
@@ -70,7 +73,7 @@ const Signup = () => {
       return
     }
     try {
-      const response = await fetch('https://joongbu.store/verify-code', {
+      const response = await fetch('https://joongbu.store/api/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -103,7 +106,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('https://joongbu.store/signup', {
+      const response = await fetch('https://joongbu.store/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

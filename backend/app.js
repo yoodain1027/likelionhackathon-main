@@ -89,7 +89,7 @@ function isCodeValid(sessionKey, req) {
 }
 
 // 인증메일 전송
-app.post('/send-verification', async (req, res) => {
+app.post('/api/send-verification', async (req, res) => {
   console.log('send-verification 진입')
   const { email } = req.body
   console.log('인증코드 발송 요청 email:', email)
@@ -123,7 +123,7 @@ app.post('/send-verification', async (req, res) => {
 })
 
 // 회원가입: 인증코드 검증
-app.post('/verify-code', (req, res) => {
+app.post('/api/verify-code', (req, res) => {
   console.log('verify-code 진입')
   const { email, code } = req.body
   if (
@@ -144,7 +144,7 @@ app.post('/verify-code', (req, res) => {
 })
 
 // 회원가입 처리
-app.post('/signup', async (req, res) => {
+app.post('/api/signup', async (req, res) => {
   console.log('signup 진입')
   const { iduser, userpw, email, name } = req.body
   if (!iduser || !userpw || !email || !name) {
@@ -179,7 +179,7 @@ app.post('/signup', async (req, res) => {
 })
 
 // 로그인 처리
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
   console.log('login 진입')
   const { iduser, userpw } = req.body
   if (!iduser || !userpw) {
@@ -206,13 +206,13 @@ app.post('/login', (req, res) => {
 })
 
 // 보호된 라우트
-app.get('/main', isAuthenticated, (req, res) => {
+app.get('/api/main', isAuthenticated, (req, res) => {
   console.log('main 진입')
   res.sendFile(path.join(__dirname, 'main.html'))
 })
 
 // 비밀번호 찾기: 인증코드 발송
-app.post('/send-reset-code', async (req, res) => {
+app.post('/api/send-reset-code', async (req, res) => {
   console.log('send-reset-code 진입')
   const { iduser, email } = req.body
   if (!iduser || !email)
@@ -251,7 +251,7 @@ app.post('/send-reset-code', async (req, res) => {
 })
 
 // 비밀번호 찾기: 인증코드 확인
-app.post('/verify-reset-code', (req, res) => {
+app.post('/api/verify-reset-code', (req, res) => {
   console.log('verify-reset-code 진입')
   const { iduser, email, code } = req.body
   if (
@@ -274,7 +274,7 @@ app.post('/verify-reset-code', (req, res) => {
 })
 
 // 비밀번호 찾기: 비밀번호 재설정
-app.post('/reset-password', async (req, res) => {
+app.post('/api/reset-password', async (req, res) => {
   console.log('reset-password 진입')
   const { iduser, email, newPassword } = req.body
   if (
@@ -310,17 +310,7 @@ app.post('/reset-password', async (req, res) => {
 
 app.use(express.static(path.join(__dirname, '../build')))
 
-// app.get('*', (req, res, next) => {
-//   // 정적 파일, API 경로는 건너뜀
-//   if (
-//     req.path.startsWith('/api') ||
-//     req.path.startsWith('/login') ||
-//     req.path.startsWith('/signup')
-//   ) {
-//     return next()
-//   }
-//   res.sendFile(path.join(__dirname, '../build', 'index.html'))
-// })
+// 와일드카드 라우트 없음
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

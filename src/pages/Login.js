@@ -14,7 +14,8 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('https://joongbu.store/login', {
+      const response = await fetch('https://joongbu.store/api/login', {
+        // ← 여기만 수정!
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
