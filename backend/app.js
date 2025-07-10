@@ -156,9 +156,11 @@ app.post('/verify-code', (req, res) => {
 
 // 회원가입 처리(이메일 인증 필수)
 app.post('/signup', async (req, res) => {
-  const { iduser, userpw, email } = req.body
-  if (!iduser || !userpw || !email) {
-    return res.status(400).json({ error: 'ID, 비밀번호, 이메일을 입력하시오.' })
+  const { iduser, userpw, email, name } = req.body
+  if (!iduser || !userpw || !email || !name) {
+    return res
+      .status(400)
+      .json({ error: 'ID, 비밀번호, 이메일, 이름을 입력하시오.' })
   }
   // 프론트엔드에서 이메일 인증을 별도 처리할 수도 있으므로, 인증 체크는 옵션
   // if (!req.session.emailVerified || req.session.emailTarget !== email) {
@@ -166,8 +168,9 @@ app.post('/signup', async (req, res) => {
   // }
   try {
     const hashedPassword = await bcrypt.hash(userpw, 10)
-    const query = 'INSERT INTO users (iduser, userpw, email) VALUES (?, ?, ?)'
-    pool.query(query, [iduser, hashedPassword, email], (err, result) => {
+    const query =
+      'INSERT INTO users (iduser, userpw, email, name) VALUES (?, ?, ?, ?)'
+    pool.query(query, [iduser, hashedPassword, email, name], (err, result) => {
       if (err) {
         if (err.code === 'ER_DUP_ENTRY') {
           return res.status(400).json({ error: 'ID가 중복되었습니다.' })
@@ -210,35 +213,35 @@ app.post('/login', (req, res) => {
   })
 })
 
-// GET: 로그아웃 처리
-app.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    // 세션 삭제
-    if (err) {
-      return res.status(500).json({ error: '로그아웃 실패' })
-    }
-    res.clearCookie('connect.sid') // 세션 쿠키 삭제
-    res.json({ message: '로그아웃 완료', redirect: '/' })
-  })
-})
+// // GET: 로그아웃 처리
+// app.get('/logout', (req, res) => {
+//   req.session.destroy((err) => {
+//     // 세션 삭제
+//     if (err) {
+//       return res.status(500).json({ error: '로그아웃 실패' })
+//     }
+//     res.clearCookie('connect.sid') // 세션 쿠키 삭제
+//     res.json({ message: '로그아웃 완료', redirect: '/' })
+//   })
+// })
 
-// DELETE: 회원탈퇴 처리
-app.delete('/user', isAuthenticated, (req, res) => {
-  const { iduser } = req.session.user
-  const query = 'DELETE FROM users WHERE iduser = ?' // user → users
-  pool.query(query, [iduser], (err) => {
-    if (err) {
-      return res.status(500).json({ error: 'DB 오류: ' + err.message })
-    }
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: '세션 삭제 실패' })
-      }
-      res.clearCookie('connect.sid') // 세션 쿠키 삭제
-      res.status(200).json({ message: '회원탈퇴 완료', redirect: '/signup' })
-    })
-  })
-})
+// // DELETE: 회원탈퇴 처리
+// app.delete('/user', isAuthenticated, (req, res) => {
+//   const { iduser } = req.session.user
+//   const query = 'DELETE FROM users WHERE iduser = ?' // user → users
+//   pool.query(query, [iduser], (err) => {
+//     if (err) {
+//       return res.status(500).json({ error: 'DB 오류: ' + err.message })
+//     }
+//     req.session.destroy((err) => {
+//       if (err) {
+//         return res.status(500).json({ error: '세션 삭제 실패' })
+//       }
+//       res.clearCookie('connect.sid') // 세션 쿠키 삭제
+//       res.status(200).json({ message: '회원탈퇴 완료', redirect: '/signup' })
+//     })
+//   })
+// })
 
 // 보호된 라우트
 app.get('/main', isAuthenticated, (req, res) => {

@@ -111,6 +111,7 @@ const Signup = () => {
           iduser: formData.회원id,
           userpw: formData.비밀번호,
           email: formData.이메일,
+          name: formData.이름,
         }),
       })
       const data = await response.json()
