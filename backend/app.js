@@ -8,6 +8,25 @@ const pool = require('./mysql')
 const transporter = require('./mailer')
 const path = require('path')
 
+console.log('현재 __dirname:', __dirname)
+console.log('express.static이 바라보는 경로:', path.join(__dirname, '../build'))
+console.log(
+  'SPA 핸들러가 바라보는 index.html:',
+  path.join(__dirname, '../build', 'index.html')
+)
+
+const fs = require('fs')
+const buildPath = path.join(__dirname, '../build', 'index.html')
+fs.access(buildPath, fs.constants.F_OK, (err) => {
+  if (err) {
+    console.error('index.html 파일이 실제로 존재하지 않습니다:', buildPath)
+  } else {
+    console.log('index.html 파일이 정상적으로 존재합니다:', buildPath)
+  }
+})
+
+console.log('현재 process.cwd():', process.cwd())
+
 const app = express()
 const port = 3001
 
