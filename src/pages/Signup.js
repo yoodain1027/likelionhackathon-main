@@ -33,7 +33,7 @@ const Signup = () => {
       return
     }
     try {
-      const response = await fetch('http://localhost:3001/send-verification', {
+      const response = await fetch('https://joongbu.store/send-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -70,7 +70,7 @@ const Signup = () => {
       return
     }
     try {
-      const response = await fetch('http://localhost:3001/verify-code', {
+      const response = await fetch('https://joongbu.store/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -103,7 +103,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/signup', {
+      const response = await fetch('https://joongbu.store/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

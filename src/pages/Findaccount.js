@@ -28,7 +28,7 @@ const FindPassword = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3001/send-reset-code', {
+      const response = await fetch('https://joongbu.store/send-reset-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -67,7 +67,7 @@ const FindPassword = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3001/verify-reset-code', {
+      const response = await fetch('https://joongbu.store/verify-reset-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -100,7 +100,7 @@ const FindPassword = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3001/reset-password', {
+      const response = await fetch('https://joongbu.store/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
