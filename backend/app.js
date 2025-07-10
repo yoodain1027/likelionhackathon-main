@@ -365,9 +365,9 @@ app.post('/reset-password', async (req, res) => {
 // 정적 파일 제공 (index.html, signup.html, style.css, main.js 등)
 app.use(express.static(__dirname, { index: false }))
 
-// 404 에러 핸들링 (SPA 새로고침 지원)
+// SPA 라우팅 지원 (404 핸들러)
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'))
+  res.sendFile(path.join(__dirname, '../build', 'index.html'))
 })
 
 // 서버 시작
