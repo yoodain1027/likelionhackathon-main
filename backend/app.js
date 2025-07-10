@@ -2,84 +2,49 @@ require('dotenv').config({ path: __dirname + '/.env' })
 console.log('SESSION_SECRET:', process.env.SESSION_SECRET)
 const express = require('express')
 const cors = require('cors')
-const bcrypt = require('bcrypt') // 비밀번호 해싱
-const session = require('express-session') // 세션관리
-const pool = require('./mysql') //데이터베이스 연결
-const transporter = require('./mailer') // mailer.js 불러오기
-const path = require('path') // 파일 경로 처리
+const bcrypt = require('bcrypt')
+const session = require('express-session')
+const pool = require('./mysql')
+const transporter = require('./mailer')
+const path = require('path')
 
 const app = express()
-const port = 3001 // React 개발서버와 포트 분리 권장
+const port = 3001
 
-// CORS 설정 (React와 연동)
+// MySQL 연결 테스트 (서버 시작 시)
+pool.query('SELECT 1', (err, results) => {
+  if (err) console.error('MySQL 연결 실패:', err)
+  else console.log('MySQL 연결 성공')
+})
+
+// CORS 설정
 app.use(
   cors({
-    origin: 'https://joongbu.store', // 실제 서비스 도메인
-    credentials: true, // 세션/쿠키 허용
+    origin: 'https://joongbu.store',
+    credentials: true,
   })
 )
 
-// =============================
-// app.js 백엔드 주요 기능별 동작 방식 및 목적 설명
-// =============================
-// - 회원가입: 이메일 인증(코드 발송/검증/만료/재발송), 인증 성공 시만 가입 가능, DB 저장, 인증 세션 관리
-// - 로그인: 입력값 검증, 비밀번호 해싱 비교, 세션 저장, 안내 메시지/리디렉션
-// - 비밀번호 찾기(재설정): 아이디+이메일 일치 시 인증코드 발송/검증/만료/재발송, 인증 성공 시만 비밀번호 변경(DB UPDATE), 인증 세션 관리
-// - 테마: 다크/라이트 테마 DB 저장/불러오기, 로그인 사용자별 적용
-// - 로그아웃/회원탈퇴: 세션/쿠키 삭제, DB 삭제, 안내 메시지/리디렉션
-// - 보호 라우트: main.html, pyramid.html 직접 접근 차단, 세션 기반 인증
-// - 모든 주요 기능별로 입력 검증, 보안(해싱/세션), 데이터 일관성, UX/안내 메시지 강화
-// - 각 기능별 상세 동작은 아래 라우트/미들웨어별 주석 참고(팀원 공유/타 프로젝트 적용 용이성 목적)
-
-// 미들웨어 설정
 app.use(express.json())
 
-// 세션 설정
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
-    resave: false, // 세션이 변경되도 저장 X
-    saveUninitialized: true, // 초기화되지않은 세션 저장 X
-    cookie: { secure: false }, // http 에서는 false로로
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
   })
 )
 
-// 보호 파일 직접 접근 차단 미들웨어 (main.html, pyramid.html)
+// 보호 파일 직접 접근 차단 미들웨어
 app.use((req, res, next) => {
-  // 정적 리소스(css, js, 이미지 등)는 차단하지 않음
-  const staticExts = [
-    '.css',
-    '.js',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.ico',
-    '.svg',
-  ]
-  //   const isStatic = staticExts.some((ext) => req.path.endsWith(ext)) // 정적파일인지 확인
-  //   // main.html, pyramid.html 직접 접근 차단은 GET 요청에만 적용
-  //   if (
-  //     req.method === 'GET' &&
-  //     !isStatic &&
-  //     (req.path === '/main.html' || req.path === '/pyramid.html') &&
-  //     !req.session.user // 세션이 없는 경우에만 차단
-  //   ) {
-  //     return res
-  //       .status(403)
-  //       .send('<h1>403 Forbidden</h1><p>직접 접근이 금지된 파일입니다.</p>')
-  //   }
-  //   next()
+  next()
 })
 
 // 로그인 여부 확인 미들웨어
 const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
-    //세션에 사용자 정보가 있을경우 다음 미들웨어로 이동
-    return next()
-  }
+  if (req.session.user) return next()
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
-    // 클라이언트가 JSON 응답 요청을 했을 경우 로그인 해달라는 메시지 출력
     return res
       .status(401)
       .json({ error: '로그인을 해주십시오.', redirect: '/' })
@@ -89,29 +54,26 @@ const isAuthenticated = (req, res, next) => {
       alert('로그인을 해주십시오.');
       window.location.href = '/';
     </script>
-  `) // 웹페이지
+  `)
 }
 
-// 인증코드 생성 함수
 function generateCode(length = 6) {
-  // 6자리 숫자 코드 생성
   return Math.random()
     .toString()
     .slice(2, 2 + length)
 }
 
-// 인증코드 유효시간(1분) 체크 함수
 function isCodeValid(sessionKey, req) {
   const now = Date.now()
   const codeTime = req.session[sessionKey + 'Time']
-  return codeTime && now - codeTime < 3 * 60 * 1000 // 3분 이내
+  return codeTime && now - codeTime < 3 * 60 * 1000
 }
 
 // 인증메일 전송
 app.post('/send-verification', async (req, res) => {
+  console.log('send-verification 진입')
   const { email } = req.body
-  console.log('인증코드 발송 요청 email:', email) // ① 요청 값 확인
-
+  console.log('인증코드 발송 요청 email:', email)
   if (!email) return res.status(400).json({ error: '이메일을 입력하세요.' })
 
   const code = generateCode(6)
@@ -127,23 +89,23 @@ app.post('/send-verification', async (req, res) => {
     text: `인증코드는 ${code} 입니다.`,
   }
 
-  // 환경변수 값 확인 (undefined 여부 체크)
   console.log('EMAIL_USER:', process.env.EMAIL_USER)
   console.log('EMAIL_PASS:', process.env.EMAIL_PASS)
 
   try {
-    // 실제 메일 발송 시도
+    console.log('메일 발송 시도')
     const info = await transporter.sendMail(mailOptions)
-    console.log('메일 발송 성공:', info) // ② 성공 로그
+    console.log('메일 발송 성공:', info)
     res.json({ message: '인증코드가 발송되었습니다.' })
   } catch (err) {
-    console.error('메일 발송 에러:', err) // ③ 에러 로그
+    console.error('메일 발송 에러:', err)
     res.status(500).json({ error: '메일 발송 실패: ' + err.message })
   }
 })
 
 // 회원가입: 인증코드 검증
 app.post('/verify-code', (req, res) => {
+  console.log('verify-code 진입')
   const { email, code } = req.body
   if (
     req.session.emailCode &&
@@ -152,10 +114,6 @@ app.post('/verify-code', (req, res) => {
     isCodeValid('emailCode', req)
   ) {
     req.session.emailVerified = true
-    // 인증 성공 시 인증코드 관련 세션은 남겨둔다 (회원가입까지 유지)
-    // delete req.session.emailCode
-    // delete req.session.emailTarget
-    // delete req.session.emailCodeTime
     res.json({ message: '이메일 인증 성공' })
   } else if (!isCodeValid('emailCode', req)) {
     res
@@ -166,30 +124,29 @@ app.post('/verify-code', (req, res) => {
   }
 })
 
-// 회원가입 처리(이메일 인증 필수)
+// 회원가입 처리
 app.post('/signup', async (req, res) => {
+  console.log('signup 진입')
   const { iduser, userpw, email, name } = req.body
   if (!iduser || !userpw || !email || !name) {
+    console.log('입력값 부족')
     return res
       .status(400)
       .json({ error: 'ID, 비밀번호, 이메일, 이름을 입력하시오.' })
   }
-  // 프론트엔드에서 이메일 인증을 별도 처리할 수도 있으므로, 인증 체크는 옵션
-  // if (!req.session.emailVerified || req.session.emailTarget !== email) {
-  //   return res.status(400).json({ error: '이메일 인증을 완료해주십시오.' })
-  // }
   try {
     const hashedPassword = await bcrypt.hash(userpw, 10)
+    console.log('비밀번호 해싱 완료')
     const query =
       'INSERT INTO users (iduser, userpw, email, name) VALUES (?, ?, ?, ?)'
     pool.query(query, [iduser, hashedPassword, email, name], (err, result) => {
+      console.log('쿼리 콜백 진입')
       if (err) {
         if (err.code === 'ER_DUP_ENTRY') {
           return res.status(400).json({ error: 'ID가 중복되었습니다.' })
         }
         return res.status(500).json({ error: 'DB 오류: ' + err.message })
       }
-      // 회원가입 성공 시 인증 관련 세션 및 인증코드 세션 삭제
       delete req.session.emailVerified
       delete req.session.emailTarget
       delete req.session.emailCode
@@ -197,18 +154,22 @@ app.post('/signup', async (req, res) => {
       res.status(201).json({ message: '회원가입 완료', redirect: '/login' })
     })
   } catch (err) {
+    console.log('비밀번호 해싱 또는 쿼리 try/catch 에러', err)
     res.status(500).json({ error: '서버 오류: ' + err.message })
   }
 })
 
-// POST: 로그인 처리
+// 로그인 처리
 app.post('/login', (req, res) => {
+  console.log('login 진입')
   const { iduser, userpw } = req.body
   if (!iduser || !userpw) {
+    console.log('입력값 부족')
     return res.status(400).json({ error: 'ID와 비밀번호를 입력하시오.' })
   }
   const query = 'SELECT * FROM users WHERE iduser = ?'
   pool.query(query, [iduser], async (err, results) => {
+    console.log('쿼리 콜백 진입')
     if (err) {
       return res.status(500).json({ error: 'DB 오류: ' + err.message })
     }
@@ -225,65 +186,32 @@ app.post('/login', (req, res) => {
   })
 })
 
-// // GET: 로그아웃 처리
-// app.get('/logout', (req, res) => {
-//   req.session.destroy((err) => {
-//     // 세션 삭제
-//     if (err) {
-//       return res.status(500).json({ error: '로그아웃 실패' })
-//     }
-//     res.clearCookie('connect.sid') // 세션 쿠키 삭제
-//     res.json({ message: '로그아웃 완료', redirect: '/' })
-//   })
-// })
-
-// // DELETE: 회원탈퇴 처리
-// app.delete('/user', isAuthenticated, (req, res) => {
-//   const { iduser } = req.session.user
-//   const query = 'DELETE FROM users WHERE iduser = ?' // user → users
-//   pool.query(query, [iduser], (err) => {
-//     if (err) {
-//       return res.status(500).json({ error: 'DB 오류: ' + err.message })
-//     }
-//     req.session.destroy((err) => {
-//       if (err) {
-//         return res.status(500).json({ error: '세션 삭제 실패' })
-//       }
-//       res.clearCookie('connect.sid') // 세션 쿠키 삭제
-//       res.status(200).json({ message: '회원탈퇴 완료', redirect: '/signup' })
-//     })
-//   })
-// })
-
 // 보호된 라우트
 app.get('/main', isAuthenticated, (req, res) => {
+  console.log('main 진입')
   res.sendFile(path.join(__dirname, 'main.html'))
 })
 
-// [비밀번호 찾기] 아이디와 이메일이 모두 맞는지 확인 후 인증코드(숫자 6자리)를 이메일로 보내줌
-// - 사용자가 아이디와 이메일을 입력하면, DB에서 둘 다 맞는지 확인
-// - 맞으면 인증코드를 세션에 저장하고, 이메일로 발송
-// - 인증코드는 3분간만 유효함
+// 비밀번호 찾기: 인증코드 발송
 app.post('/send-reset-code', async (req, res) => {
+  console.log('send-reset-code 진입')
   const { iduser, email } = req.body
   if (!iduser || !email)
     return res.status(400).json({ error: 'ID와 이메일을 모두 입력하세요.' })
-  // DB에서 아이디와 이메일이 모두 맞는지 확인
   pool.query(
     'SELECT * FROM users WHERE iduser = ? AND email = ?',
     [iduser, email],
     async (err, results) => {
+      console.log('쿼리 콜백 진입')
       if (err) return res.status(500).json({ error: 'DB 오류: ' + err.message })
       if (results.length === 0)
         return res.status(404).json({ error: '일치하는 계정이 없습니다.' })
-      // 인증코드 생성 및 세션에 저장
       const code = generateCode(6)
-      req.session.resetId = iduser // 인증 시도한 아이디
-      req.session.resetEmail = email // 인증 시도한 이메일
-      req.session.resetCode = code // 인증코드
-      req.session.resetCodeTime = Date.now() // 인증코드 발급 시각
-      req.session.resetVerified = false // 인증 성공 여부
-      // 이메일로 인증코드 발송
+      req.session.resetId = iduser
+      req.session.resetEmail = email
+      req.session.resetCode = code
+      req.session.resetCodeTime = Date.now()
+      req.session.resetVerified = false
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
@@ -291,20 +219,21 @@ app.post('/send-reset-code', async (req, res) => {
         text: `비밀번호 재설정 인증코드는 ${code} 입니다.`,
       }
       try {
+        console.log('메일 발송 시도')
         await transporter.sendMail(mailOptions)
+        console.log('메일 발송 성공')
         res.json({ message: '인증코드가 발송되었습니다.' })
       } catch (err) {
+        console.error('메일 발송 에러:', err)
         res.status(500).json({ error: '메일 발송 실패: ' + err.message })
       }
     }
   )
 })
 
-// [비밀번호 찾기] 인증코드 확인
-// - 사용자가 입력한 아이디, 이메일, 인증코드가 모두 세션에 저장된 값과 일치하는지 확인
-// - 인증코드가 맞고, 3분 이내면 인증 성공(세션에 인증 성공 표시)
-// - 인증 성공 시 인증코드 세션 삭제, 실패 시 안내 메시지
+// 비밀번호 찾기: 인증코드 확인
 app.post('/verify-reset-code', (req, res) => {
+  console.log('verify-reset-code 진입')
   const { iduser, email, code } = req.body
   if (
     req.session.resetId === iduser &&
@@ -312,9 +241,9 @@ app.post('/verify-reset-code', (req, res) => {
     req.session.resetCode === code &&
     isCodeValid('resetCode', req)
   ) {
-    req.session.resetVerified = true // 인증 성공 표시
-    delete req.session.resetCode // 인증코드 삭제
-    delete req.session.resetCodeTime // 인증코드 발급시각 삭제
+    req.session.resetVerified = true
+    delete req.session.resetCode
+    delete req.session.resetCodeTime
     res.json({ message: '인증 성공' })
   } else if (!isCodeValid('resetCode', req)) {
     res
@@ -325,11 +254,9 @@ app.post('/verify-reset-code', (req, res) => {
   }
 })
 
-// [비밀번호 찾기] 새 비밀번호로 변경
-// - 인증이 성공한 경우(세션에 인증 성공 표시가 있을 때)만 비밀번호 변경 가능
-// - 입력한 새 비밀번호를 암호화해서 DB에 저장
-// - 변경 후 인증 관련 세션 모두 삭제, 성공 메시지와 함께 로그인 페이지로 이동 안내
+// 비밀번호 찾기: 비밀번호 재설정
 app.post('/reset-password', async (req, res) => {
+  console.log('reset-password 진입')
   const { iduser, email, newPassword } = req.body
   if (
     !req.session.resetVerified ||
@@ -339,15 +266,14 @@ app.post('/reset-password', async (req, res) => {
     return res.status(400).json({ error: '이메일 인증이 필요합니다.' })
   }
   try {
-    // 새 비밀번호 암호화(해싱)
     const hashed = await bcrypt.hash(newPassword, 10)
     pool.query(
       'UPDATE users SET userpw = ? WHERE iduser = ? AND email = ?',
       [hashed, iduser, email],
       (err, result) => {
+        console.log('쿼리 콜백 진입')
         if (err)
           return res.status(500).json({ error: 'DB 오류: ' + err.message })
-        // 인증 관련 세션 모두 삭제(보안)
         delete req.session.resetId
         delete req.session.resetEmail
         delete req.session.resetVerified
@@ -358,19 +284,18 @@ app.post('/reset-password', async (req, res) => {
       }
     )
   } catch (err) {
+    console.log('비밀번호 해싱 또는 쿼리 try/catch 에러', err)
     res.status(500).json({ error: '서버 오류: ' + err.message })
   }
 })
 
-// 정적 파일 제공 (index.html, signup.html, style.css, main.js 등)
 app.use(express.static(path.join(__dirname, '../build')))
 
-// SPA 라우팅 지원 (404 핸들러)
 app.use((req, res) => {
+  console.log('SPA 핸들러 진입')
   res.sendFile(path.join(__dirname, '../build', 'index.html'))
 })
 
-// 서버 시작
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
