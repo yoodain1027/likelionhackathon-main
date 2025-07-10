@@ -310,10 +310,10 @@ app.post('/reset-password', async (req, res) => {
 
 app.use(express.static(path.join(__dirname, '../build')))
 
-app.use((req, res) => {
-  console.log('SPA 핸들러 진입')
-  res.sendFile(path.join(__dirname, '../build', 'index.html'))
-})
+// app.use((req, res) => {
+//   console.log('SPA 핸들러 진입')
+//   res.sendFile(path.join(__dirname, '../build', 'index.html'))
+// })
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
