@@ -127,6 +127,7 @@ app.post('/send-verification', async (req, res) => {
     await transporter.sendMail(mailOptions)
     res.json({ message: '인증코드가 발송되었습니다.' })
   } catch (err) {
+    console.error('메일 발송 에러:', err) // 이 부분 추가!
     res.status(500).json({ error: '메일 발송 실패: ' + err.message })
   }
 })
