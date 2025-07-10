@@ -57,19 +57,19 @@ app.use((req, res, next) => {
     '.ico',
     '.svg',
   ]
-  const isStatic = staticExts.some((ext) => req.path.endsWith(ext)) // 정적파일인지 확인
-  // main.html, pyramid.html 직접 접근 차단은 GET 요청에만 적용
-  if (
-    req.method === 'GET' &&
-    !isStatic &&
-    (req.path === '/main.html' || req.path === '/pyramid.html') &&
-    !req.session.user // 세션이 없는 경우에만 차단
-  ) {
-    return res
-      .status(403)
-      .send('<h1>403 Forbidden</h1><p>직접 접근이 금지된 파일입니다.</p>')
-  }
-  next()
+  //   const isStatic = staticExts.some((ext) => req.path.endsWith(ext)) // 정적파일인지 확인
+  //   // main.html, pyramid.html 직접 접근 차단은 GET 요청에만 적용
+  //   if (
+  //     req.method === 'GET' &&
+  //     !isStatic &&
+  //     (req.path === '/main.html' || req.path === '/pyramid.html') &&
+  //     !req.session.user // 세션이 없는 경우에만 차단
+  //   ) {
+  //     return res
+  //       .status(403)
+  //       .send('<h1>403 Forbidden</h1><p>직접 접근이 금지된 파일입니다.</p>')
+  //   }
+  //   next()
 })
 
 // 로그인 여부 확인 미들웨어
@@ -363,7 +363,7 @@ app.post('/reset-password', async (req, res) => {
 })
 
 // 정적 파일 제공 (index.html, signup.html, style.css, main.js 등)
-app.use(express.static(__dirname, { index: false }))
+app.use(express.static(path.join(__dirname, '../build')))
 
 // SPA 라우팅 지원 (404 핸들러)
 app.use((req, res) => {
