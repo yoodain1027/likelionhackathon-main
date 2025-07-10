@@ -12,7 +12,7 @@ const port = 3001 // React 개발서버와 포트 분리 권장
 // CORS 설정 (React와 연동)
 app.use(
   cors({
-    origin: 'http://localhost:3000', // React 개발서버 주소
+    origin: 'https://joongbu.store', // 실제 서비스 도메인
     credentials: true, // 세션/쿠키 허용
   })
 )
