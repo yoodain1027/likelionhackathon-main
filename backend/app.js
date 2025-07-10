@@ -5,6 +5,7 @@ const cors = require('cors')
 const bcrypt = require('bcrypt') // 비밀번호 해싱
 const session = require('express-session') // 세션관리
 const pool = require('./mysql') //데이터베이스 연결
+const transporter = require('./mailer') // mailer.js 불러오기
 const path = require('path') // 파일 경로 처리
 
 const app = express()
@@ -106,28 +107,37 @@ function isCodeValid(sessionKey, req) {
   return codeTime && now - codeTime < 3 * 60 * 1000 // 3분 이내
 }
 
-const transporter = require('./mailer') // mailer.js 불러오기
-
-// 회원가입: 인증코드 발송
+// 인증메일 전송
 app.post('/send-verification', async (req, res) => {
   const { email } = req.body
+  console.log('인증코드 발송 요청 email:', email) // ① 요청 값 확인
+
   if (!email) return res.status(400).json({ error: '이메일을 입력하세요.' })
+
   const code = generateCode(6)
   req.session.emailCode = code
   req.session.emailTarget = email
   req.session.emailCodeTime = Date.now()
   req.session.emailVerified = false
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
     subject: '이메일 인증코드',
     text: `인증코드는 ${code} 입니다.`,
   }
+
+  // 환경변수 값 확인 (undefined 여부 체크)
+  console.log('EMAIL_USER:', process.env.EMAIL_USER)
+  console.log('EMAIL_PASS:', process.env.EMAIL_PASS)
+
   try {
-    await transporter.sendMail(mailOptions)
+    // 실제 메일 발송 시도
+    const info = await transporter.sendMail(mailOptions)
+    console.log('메일 발송 성공:', info) // ② 성공 로그
     res.json({ message: '인증코드가 발송되었습니다.' })
   } catch (err) {
-    console.error('메일 발송 에러:', err) // 이 부분 추가!
+    console.error('메일 발송 에러:', err) // ③ 에러 로그
     res.status(500).json({ error: '메일 발송 실패: ' + err.message })
   }
 })
@@ -355,9 +365,9 @@ app.post('/reset-password', async (req, res) => {
 // 정적 파일 제공 (index.html, signup.html, style.css, main.js 등)
 app.use(express.static(__dirname, { index: false }))
 
-// 404 에러 핸들링
+// 404 에러 핸들링 (SPA 새로고침 지원)
 app.use((req, res) => {
-  res.status(404).json({ error: '페이지를 찾을 수 없습니다.' })
+  res.sendFile(path.join(__dirname, 'build', 'index.html'))
 })
 
 // 서버 시작
