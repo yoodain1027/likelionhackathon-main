@@ -310,17 +310,17 @@ app.post('/reset-password', async (req, res) => {
 
 app.use(express.static(path.join(__dirname, '../build')))
 
-app.get('*', (req, res, next) => {
-  // 정적 파일, API 경로는 건너뜀
-  if (
-    req.path.startsWith('/api') ||
-    req.path.startsWith('/login') ||
-    req.path.startsWith('/signup')
-  ) {
-    return next()
-  }
-  res.sendFile(path.join(__dirname, '../build', 'index.html'))
-})
+// app.get('*', (req, res, next) => {
+//   // 정적 파일, API 경로는 건너뜀
+//   if (
+//     req.path.startsWith('/api') ||
+//     req.path.startsWith('/login') ||
+//     req.path.startsWith('/signup')
+//   ) {
+//     return next()
+//   }
+//   res.sendFile(path.join(__dirname, '../build', 'index.html'))
+// })
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
