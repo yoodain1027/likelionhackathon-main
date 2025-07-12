@@ -10,3 +10,6 @@ const transporter = nodemailer.createTransport({
 })
 
 module.exports = transporter
+
+// nodemailer 설정
+// .env 파일에 메일을 보낼 계정 등록, 앱 비밀번호 등록

@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import '../css/FindAccount.css'
 
+// (공통) 도메인과 기능에 api가 붙는 이유: cannot GET 오류를 해결하기 위해 백엔드 처리를 함, 안 붙어있으면 백엔드(nginx, express 등)에서 받지 않고 React에서 index.html로 처리 -> 기능과 페이지 이동을 구분하기 위해 사용
+
 const FindPassword = () => {
   const [form, setForm] = useState({
     userId: '',

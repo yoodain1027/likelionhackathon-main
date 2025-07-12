@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import '../css/Login.css'
 
+// (공통) 도메인과 기능에 api가 붙는 이유: cannot GET 오류를 해결하기 위해 백엔드 처리를 함, 안 붙어있으면 백엔드(nginx, express 등)에서 받지 않고 React에서 index.html로 처리 -> 기능과 페이지 이동을 구분하기 위해 사용
+
 const Login = () => {
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
@@ -15,7 +17,6 @@ const Login = () => {
 
     try {
       const response = await fetch('https://joongbu.store/api/login', {
-        // ← 여기만 수정!
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
