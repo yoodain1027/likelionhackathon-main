@@ -1,14 +1,3 @@
-const express = require('express');
-const router = express.Router();
-const commentController = require('../controller/commentController');
-const { authenticateUser } = require('../middleware/auth');
-
-router.post('/', authenticateUser, commentController.createComment);
-router.put('/:id', authenticateUser, commentController.updateComment);
-router.delete('/:id', authenticateUser, commentController.deleteComment);
-
-module.exports = router;
-
 const db = require('../config/db');
 
 exports.createComment = (req, res) => {
@@ -29,29 +18,44 @@ exports.updateComment = (req, res) => {
   const commentId = req.params.id;
   const { content } = req.body;
   const userId = req.user.id;
+  const userRole = req.user.role;
 
-  db.query(
-    'UPDATE comments SET content = ? WHERE id = ? AND user_id = ?',
-    [content, commentId, userId],
-    (err, result) => {
-      if (err) return res.status(500).send('DB Error');
-      if (result.affectedRows === 0) return res.status(403).send('No permission');
-      res.send('Comment updated');
-    }
-  );
+  const query =
+    userRole === 'admin'
+      ? 'UPDATE comments SET content = ? WHERE id = ?'
+      : 'UPDATE comments SET content = ? WHERE id = ? AND user_id = ?';
+
+  const params =
+    userRole === 'admin'
+      ? [content, commentId]
+      : [content, commentId, userId];
+
+  db.query(query, params, (err, result) => {
+    if (err) return res.status(500).send('DB Error');
+    if (result.affectedRows === 0)
+      return res.status(403).send('No permission');
+    res.send('Comment updated');
+  });
 };
 
 exports.deleteComment = (req, res) => {
   const commentId = req.params.id;
   const userId = req.user.id;
+  const userRole = req.user.role;
 
-  db.query(
-    'DELETE FROM comments WHERE id = ? AND user_id = ?',
-    [commentId, userId],
-    (err, result) => {
-      if (err) return res.status(500).send('DB Error');
-      if (result.affectedRows === 0) return res.status(403).send('No permission');
-      res.send('Comment deleted');
-    }
-  );
+  const query =
+    userRole === 'admin'
+      ? 'DELETE FROM comments WHERE id = ?'
+      : 'DELETE FROM comments WHERE id = ? AND user_id = ?';
+
+  const params =
+    userRole === 'admin' ? [commentId] : [commentId, userId];
+
+  db.query(query, params, (err, result) => {
+    if (err) return res.status(500).send('DB Error');
+    if (result.affectedRows === 0)
+      return res.status(403).send('No permission');
+    res.send('Comment deleted');
+  });
 };
+
