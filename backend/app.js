@@ -256,11 +256,10 @@ app.post('/api/reset-password', async (req, res) => {
 })
 
 // 댓글 및 게시글 라우터 추가
-const commentRouter = require('./backend/comment')
-const postRouter = require('./backend/post')
+const unifiedRouter = require('./routes'); // 통합된 라우터 파일
 
-app.use('/api/comments', commentRouter)
-app.use('/api/posts', postRouter)
+app.use('/api', unifiedRouter); // 모든 라우팅을 /api 하위에서 처리
+
 
 
 // 정적 파일 제공 (React 빌드 파일)
