@@ -255,6 +255,14 @@ app.post('/api/reset-password', async (req, res) => {
   }
 })
 
+// 댓글 및 게시글 라우터 추가
+const commentRouter = require('./backend/comment')
+const postRouter = require('./backend/post')
+
+app.use('/api/comments', commentRouter)
+app.use('/api/posts', postRouter)
+
+
 // 정적 파일 제공 (React 빌드 파일)
 app.use(express.static(path.join(__dirname, '../build')))
 
