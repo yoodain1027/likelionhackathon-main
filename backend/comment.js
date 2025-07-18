@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('./mysql');
 
 exports.createComment = (req, res) => {
   const { postId, content } = req.body;
