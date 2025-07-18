@@ -2,8 +2,8 @@ console.log('✅ routes.js loaded');
 
 const express = require('express');
 const router = express.Router();
-const postController = require('./controller/post');
-const commentController = require('./controller/comment');
+const postController = require('./post');
+const commentController = require('./comment');
 const { authenticateUser } = require('./middleware/auth');
 
 // 📝 게시글 라우팅
