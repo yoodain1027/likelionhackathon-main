@@ -5,7 +5,8 @@ const express = require('express');
 const router = express.Router();
 const postController = require('./post');
 const commentController = require('./comment');
-const { authenticateUser } = require('./middleware/auth');
+const { isAuthenticated } = require('./auth');
+
 
 // 📝 게시글 라우팅
 router.post('/posts', authenticateUser, postController.createPost);
