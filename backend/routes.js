@@ -1,21 +1,18 @@
-console.log('✅ routes.js loaded from:', __filename);
-
-
 const express = require('express');
 const router = express.Router();
 const postController = require('./post');
 const commentController = require('./comment');
-const { isAuthenticated } = require('./auth');
+const { isAuthenticated } = require('./auth'); 
 
+// 게시글 라우팅
+router.post('/posts', isAuthenticated, postController.createPost);
+router.put('/posts/:id', isAuthenticated, postController.updatePost);
+router.delete('/posts/:id', isAuthenticated, postController.deletePost);
 
-// 📝 게시글 라우팅
-router.post('/posts', authenticateUser, postController.createPost);
-router.put('/posts/:id', authenticateUser, postController.updatePost);
-router.delete('/posts/:id', authenticateUser, postController.deletePost);
-
-// 💬 댓글 라우팅
-router.post('/comments', authenticateUser, commentController.createComment);
-router.put('/comments/:id', authenticateUser, commentController.updateComment);
-router.delete('/comments/:id', authenticateUser, commentController.deleteComment);
+// 댓글 라우팅
+router.post('/comments', isAuthenticated, commentController.createComment);
+router.put('/comments/:id', isAuthenticated, commentController.updateComment);
+router.delete('/comments/:id', isAuthenticated, commentController.deleteComment);
 
 module.exports = router;
+
