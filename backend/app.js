@@ -260,9 +260,6 @@ const unifiedRouter = require('./routes'); // 통합된 라우터 파일
 
 app.use('/api', unifiedRouter); // 모든 라우팅을 /api 하위에서 처리
 
-app.get('/', (req, res) => {
-  res.send('백엔드 서버가 정상적으로 작동 중입니다!');
-});
 
 
 // 정적 파일 제공 (React 빌드 파일)
