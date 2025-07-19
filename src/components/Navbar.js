@@ -26,7 +26,11 @@ function Navbar() {
       <div className="navbar-logo">
         <p>hackathon</p>
       </div>
+
       <ul className="navbar-links">
+        <li>
+          <Link to="/boardpage">커뮤니티</Link>
+        </li>
         {isLoggedIn ? (
           <>
             <li>
@@ -56,6 +60,10 @@ function Navbar() {
         )}
       </ul>
     </nav>
+  );
+}
+
+export default Navbar;
   );
 }
 
