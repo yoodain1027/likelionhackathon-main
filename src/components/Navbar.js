@@ -1,32 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import "../css/Navbar.css";
+import React, { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import '../css/Navbar.css'
 
 function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
 
   // 로그인 상태 확인
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    setIsLoggedIn(!!userId); // userId가 있으면 true, 없으면 false
-  }, [location]); // 경로가 바뀔 때마다 상태 체크
+    const userId = localStorage.getItem('userId')
+    setIsLoggedIn(!!userId) // userId가 있으면 true, 없으면 false
+  }, [location]) // 경로가 바뀔 때마다 상태 체크
 
   // 로그아웃 처리
   const handleLogout = () => {
-    localStorage.removeItem("userId"); // 로그인 시 저장한 키 삭제
-    setIsLoggedIn(false);
-    alert("로그아웃 되었습니다.");
-    navigate("/login");
-  };
+    localStorage.removeItem('userId') // 로그인 시 저장한 키 삭제
+    setIsLoggedIn(false)
+    alert('로그아웃 되었습니다.')
+    navigate('/login')
+  }
 
   return (
     <nav className="navbar">
       <div className="navbar-logo">
         <p>hackathon</p>
       </div>
+
       <ul className="navbar-links">
+        <li>
+          <Link to="/boardpage">커뮤니티</Link>
+        </li>
         {isLoggedIn ? (
           <>
             <li>
@@ -36,13 +40,13 @@ function Navbar() {
               <button
                 onClick={handleLogout}
                 style={{
-                  background: "none",
-                  border: "none",
-                  fontWeight: "700",
-                  padding: "6px 14px",
-                  color: "#5391d9",
-                  cursor: "pointer",
-                  textDecoration: "underline",
+                  background: 'none',
+                  border: 'none',
+                  fontWeight: '700',
+                  padding: '6px 14px',
+                  color: '#5391d9',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
                 }}
               >
                 로그아웃
@@ -56,7 +60,7 @@ function Navbar() {
         )}
       </ul>
     </nav>
-  );
+  )
 }
 
-export default Navbar;
+export default Navbar

@@ -10,6 +10,8 @@ const pool = require('./mysql') // MySQL 연결
 const transporter = require('./mailer') // nodemailer 설정
 const path = require('path')
 
+const { isAdmin } = require('./middleware')
+const logAction = require('./logger')
 // (공통) 도메인과 기능에 api가 붙는 이유: cannot GET 오류를 해결하기 위해 백엔드 처리를 함,
 // 안 붙어있으면 백엔드(nginx, express 등)에서 받지 않고 React에서 index.html로 처리 ->
 // 기능과 페이지 이동을 구분하기 위해 사용
@@ -254,6 +256,24 @@ app.post('/api/reset-password', async (req, res) => {
     res.status(500).json({ error: '서버 오류: ' + err.message })
   }
 })
+
+// 관리자 전용 로그 조회 API
+app.get('/admin/logs', isAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool
+      .promise()
+      .query('SELECT * FROM logs ORDER BY timestamp DESC')
+    await logAction(req.user.id, '관리자 로그 조회', req.ip)
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ message: '로그 조회 실패' })
+  }
+})
+
+// 댓글 및 게시글 라우터 추가
+const unifiedRouter = require('./routes') // 통합된 라우터 파일
+
+app.use('/api', unifiedRouter) // 모든 라우팅을 /api 하위에서 처리
 
 // 정적 파일 제공 (React 빌드 파일)
 app.use(express.static(path.join(__dirname, '../build')))
