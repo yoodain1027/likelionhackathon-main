@@ -10,7 +10,6 @@ const pool = require('./mysql') // MySQL 연결
 const transporter = require('./mailer') // nodemailer 설정
 const path = require('path')
 
-const { isAdmin } = require('./middleware')
 const logAction = require('./logger')
 // (공통) 도메인과 기능에 api가 붙는 이유: cannot GET 오류를 해결하기 위해 백엔드 처리를 함,
 // 안 붙어있으면 백엔드(nginx, express 등)에서 받지 않고 React에서 index.html로 처리 ->
