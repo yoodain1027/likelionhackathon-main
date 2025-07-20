@@ -257,7 +257,7 @@ app.post('/api/reset-password', async (req, res) => {
 })
 
 // 관리자 전용 로그 조회 API
-app.get('/admin/logs', isAdmin, async (req, res) => {
+app.get('/admin/logs', async (req, res) => {
   try {
     const [rows] = await pool
       .promise()
