@@ -1,5 +1,6 @@
 const db = require('./mysql');
 
+// ✅ 댓글 작성
 exports.createComment = (req, res) => {
   const { postId, content } = req.body;
   const userId = req.user.id;
@@ -14,6 +15,7 @@ exports.createComment = (req, res) => {
   );
 };
 
+// ✅ 댓글 수정
 exports.updateComment = (req, res) => {
   const commentId = req.params.id;
   const { content } = req.body;
@@ -38,6 +40,7 @@ exports.updateComment = (req, res) => {
   });
 };
 
+// ✅ 댓글 삭제
 exports.deleteComment = (req, res) => {
   const commentId = req.params.id;
   const userId = req.user.id;
@@ -59,3 +62,21 @@ exports.deleteComment = (req, res) => {
   });
 };
 
+// ✅ 전체 댓글 조회
+exports.getAllComments = (req, res) => {
+  db.query('SELECT * FROM comments ORDER BY created_at DESC', (err, results) => {
+    if (err) return res.status(500).send('DB Error');
+    res.send(results);
+  });
+};
+
+// ✅ 특정 댓글 조회
+exports.getCommentById = (req, res) => {
+  const commentId = req.params.id;
+
+  db.query('SELECT * FROM comments WHERE id = ?', [commentId], (err, results) => {
+    if (err) return res.status(500).send('DB Error');
+    if (results.length === 0) return res.status(404).send('Comment not found');
+    res.send(results[0]);
+  });
+};
