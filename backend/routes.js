@@ -3,16 +3,16 @@ const router = express.Router();
 const postController = require('./post');
 const commentController = require('./comment');
 const { isAuthenticated } = require('./auth');
-const pool = require('./mysql'); // 💾 DB 연결 모듈 추가
+const pool = require('./mysql'); //  DB 연결 모듈 추가
 
 // 📡 DB 연결 확인용 API
 router.get('/ping-db', (req, res) => {
   pool.query('SELECT 1 + 1 AS result', (err, results) => {
     if (err) {
-      console.error('❌ DB 연결 실패:', err.message);
+      console.error(' DB 연결 실패:', err.message);
       return res.status(500).send('DB 연결 실패!');
     }
-    console.log('✅ DB 연결 성공!');
+    console.log(' DB 연결 성공!');
     res.send('DB 연결 성공! 결과: ' + results[0].result); // → "2"가 반환되면 OK
   });
 });
