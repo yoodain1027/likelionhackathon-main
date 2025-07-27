@@ -3,7 +3,7 @@ const router = express.Router();
 const postController = require('./post');
 const commentController = require('./comment');
 const { isAuthenticated } = require('./auth');
-const pool = require('../mysql'); // 💾 DB 연결 모듈 추가
+const pool = require('./mysql'); // 💾 DB 연결 모듈 추가
 
 // 📡 DB 연결 확인용 API
 router.get('/ping-db', (req, res) => {
