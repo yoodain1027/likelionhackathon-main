@@ -266,6 +266,7 @@ app.use('/api', unifiedRouter); // 모든 라우팅을 /api 하위에서 처리
 app.use(express.static(path.join(__dirname, '../build')))
 
 // 서버 시작
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Example app listening on port ${port}`)
 })
+
