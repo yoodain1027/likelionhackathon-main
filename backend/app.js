@@ -256,7 +256,7 @@ app.post('/api/reset-password', async (req, res) => {
 })
 
 // 댓글 및 게시글 라우터 추가
-const unifiedRouter = require('./routes'); // 통합된 라우터 파일
+const unifiedRouter = require('./routes.js');
 
 app.use('/api', unifiedRouter); // 모든 라우팅을 /api 하위에서 처리
 
