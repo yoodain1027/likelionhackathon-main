@@ -16,30 +16,34 @@ const EditPostPage = () => {
 
   const navigate = useNavigate();
 
-   const handleEdit = async () => {
-    if (currentUserId === postAuthorId || currentUserRole === 'admin') {
-      try {
-        // 📨 수정 요청 보내기
-        const response = await axios.put(
-          `https://joongbu.store/api/posts/${id}`,
-          { title, content },
-          { withCredentials: true }
-        );
+const handleEdit = async () => {
+  if (currentUserId === postAuthorId || currentUserRole === "admin") {
+    try {
+      const response = await axios.put(
+        `https://joongbu.store/api/posts/123`, // 실제 게시글 ID로 바꿔야 함
+        { title, content },
+        { withCredentials: true }
+      );
 
-        console.log('응답:', response.data);
+      console.log("응답:", response.data);
+      setIsSuccess(true);
+      setIsError(false);
 
-        //  수정 성공 처리 후 페이지 이동
-        setTimeout(() => {
-          console.log("1초 뒤 페이지 이동"); // 디버깅용
-          navigate(`/postdetailpage/${id}`); // or 그냥 "/postdetailpage" 원하시는 페이지로
-        }, 1000);
-      } catch (err) {
-        console.error('수정 실패:', err.response?.data || err.message);
-      }
-    } else {
-      console.warn('권한 없음: 작성자 또는 관리자만 수정 가능');
+      setTimeout(() => {
+        navigate("/postdetailpage"); // 또는 `/postdetailpage/${id}`
+      }, 1000);
+    } catch (err) {
+      console.error("에러:", err.response?.data || err.message);
+      setIsSuccess(false);
+      setIsError(true);
     }
-  };
+  } else {
+    setIsSuccess(false);
+    setIsError(true);
+  }
+};
+
+  
   return (
     <div className="container">
       <h2>{type === "post" ? "게시글 수정" : "댓글 수정"}</h2>
