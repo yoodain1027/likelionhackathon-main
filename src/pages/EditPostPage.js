@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../css/PostPage.css";
+import axios from 'axios';
 
 const EditPostPage = () => {
   const type = "post"; // 게시글 수정용
